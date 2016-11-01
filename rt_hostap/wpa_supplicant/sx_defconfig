@@ -1,0 +1,58 @@
+# Example wpa_supplicant build time configuration
+#
+# This file lists the configuration options that are used when building the
+# hostapd binary. All lines starting with # are ignored. Configuration option
+# lines must be commented out complete, if they are not to be included, i.e.,
+# just setting VARIABLE=n is not disabling that variable.
+
+CONFIG_DRIVER_RTOS=y
+
+# Enable IEEE 802.1X Supplicant (automatically included if any EAP method is
+# included)
+#CONFIG_IEEE8021X_EAPOL=y
+
+# Wi-Fi Protected Setup (WPS)
+#CONFIG_WPS=y
+# Enable WSC 2.0 support
+#CONFIG_WPS2=y
+
+# Remove debugging code that is printing out debug message to stdout.
+# This can be used to reduce the size of the wpa_supplicant considerably
+# if debugging code is not needed. The size reduction can be around 35%
+# (e.g., 90 kB).
+#CONFIG_NO_STDOUT_DEBUG=y
+CONFIG_NO_WPA_MSG=y
+
+# Remove WPA support, e.g., for wired-only IEEE 802.1X supplicant, to save
+#CONFIG_NO_WPA=y
+
+# Remove WPA2 support. This allows WPA to be used, but removes WPA2 code to
+# save about 1 kB in code size when building only WPA-Personal (no EAP support)
+# or 6 kB if building for WPA-Enterprise.
+#CONFIG_NO_WPA2=y
+
+# Select configuration backend:
+CONFIG_BACKEND=none
+
+# Remove configuration write functionality (i.e., to allow the configuration
+# file to be updated based on runtime configuration changes). The runtime
+# configuration can still be changed, the changes are just not going to be
+# persistent over restarts. This option can be used to reduce code size by
+# about 3.5 kB.
+CONFIG_NO_CONFIG_WRITE=y
+
+# Remove support for configuration blobs to reduce code size by about 1.5 kB.
+CONFIG_NO_CONFIG_BLOBS=y
+
+# Select program entry point implementation:
+# main = UNIX/POSIX like main() function (default)
+# main_winsvc = Windows service (read parameters from registry)
+# main_none = Very basic example (development use only)
+CONFIG_MAIN=main
+
+CONFIG_ELOOP=eloop_rtos
+
+CONFIG_TLS=none
+CONFIG_INTERNAL_AES=y
+CONFIG_INTERNAL_SHA1=y
+#CONFIG_INTERNAL_MD5=y
