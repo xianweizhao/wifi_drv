@@ -1,0 +1,100 @@
+# Example hostapd build time configuration
+#
+# This file lists the configuration options that are used when building the
+# hostapd binary. All lines starting with # are ignored. Configuration option
+# lines must be commented out complete, if they are not to be included, i.e.,
+# just setting VARIABLE=n is not disabling that variable.
+#
+# This file is included in Makefile, so variables like CFLAGS and LIBS can also
+# be modified from here. In most cass, these lines should use += in order not
+# to override previous values of the variables.
+
+#CONFIG_OS=rtos
+CONFIG_NO_CTRL_IFACE=y
+CONFIG_NO_WPA=y
+#CONFIG_NO_HOSTAPD_LOGGER=y
+
+
+
+
+
+# Driver interface for nuttx os ioctl
+CONFIG_DRIVER_RTOS=y
+
+
+
+# IEEE 802.11F/IAPP
+#CONFIG_IAPP=y
+
+# WPA2/IEEE 802.11i RSN pre-authentication
+#CONFIG_RSN_PREAUTH=y
+
+# PeerKey handshake for Station to Station Link (IEEE 802.11e DLS)
+#CONFIG_PEERKEY=y
+# Integrated EAP server
+#CONFIG_EAP=y
+
+# EAP-MD5 for the integrated EAP server
+#CONFIG_EAP_MD5=y
+
+# EAP-TLS for the integrated EAP server
+#CONFIG_EAP_TLS=y
+
+
+
+
+# Include support for optional SHA256 cipher suite in EAP-GPSK
+#CONFIG_EAP_GPSK_SHA256=y
+
+
+
+# Wi-Fi Protected Setup (WPS)
+#CONFIG_WPS=y
+# Enable WSC 2.0 support
+#CONFIG_WPS2=y
+# Enable UPnP support for external WPS Registrars
+#CONFIG_WPS_UPNP=y
+
+
+
+
+# PKCS#12 (PFX) support (used to read private key and certificate file from
+# a file that usually has extension .p12 or .pfx)
+#CONFIG_PKCS12=y
+
+
+
+# Build IPv6 support for RADIUS operations
+#CONFIG_IPV6=y
+
+# IEEE Std 802.11r-2008 (Fast BSS Transition)
+#CONFIG_IEEE80211R=y
+
+# Use the hostapd's IEEE 802.11 authentication (ACL), but without
+# the IEEE 802.11 Management capability (e.g., madwifi or FreeBSD/net80211)
+#CONFIG_DRIVER_RADIUS_ACL=y
+
+# IEEE 802.11n (High Throughput) support
+#CONFIG_IEEE80211N=y
+
+# Remove debugging code that is printing out debug messages to stdout.
+# This can be used to reduce the size of the hostapd considerably if debugging
+# code is not needed.
+#CONFIG_NO_STDOUT_DEBUG=y
+CONFIG_NO_WPA_MSG=y
+
+# Remove support for RADIUS accounting
+CONFIG_NO_ACCOUNTING=y
+
+# Remove support for RADIUS
+CONFIG_NO_RADIUS=y
+
+# Remove support for VLANs
+CONFIG_NO_VLAN=y
+
+# Remove support for dumping state into a file on SIGUSR1 signal
+# This can be used to reduce binary size at the cost of disabling a debugging
+# option.
+CONFIG_NO_DUMP_STATE=y
+
+
