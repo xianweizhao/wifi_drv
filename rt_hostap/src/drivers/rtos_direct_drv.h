@@ -1,8 +1,6 @@
 #ifndef RTOS_DIRECT_DRV_H
 #define RTOS_DIRECT_DRV_H
-
-#include "os_adp.h"
-#include "eloop.h"
+#include "eloop.h" /* eloop include os_adp.h */
 #define IFLA_WIRELESS 1
 #define IFLA_RX_EAPOL 2
 enum evt_type_t{
@@ -11,7 +9,7 @@ enum evt_type_t{
 };
 
 enum evt_subtyp_t{
-	DRV_SCAN_DONE = 1	
+	DRV_SCAN_DONE = 1
 };
 
 struct drv_event {

@@ -16,7 +16,6 @@
 #include "common.h"
 #include "wifi_manager.h"
 #include "wpa_supplicant_i.h"
-#include "os_adp.h"
 #include "wifi_server_intf.h"
 #define WPA_DRIVER_NAME "direct"
 #define WPA_INTF_NAME   "wlan0"

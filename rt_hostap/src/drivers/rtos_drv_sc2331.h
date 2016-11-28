@@ -34,8 +34,6 @@
 #define pr_error(fmt, ...)			\
 	printf(pr_fmt(fmt), ##__VA_ARGS__)
 
-
-
 struct ether_addr
 {
       uint8_t ether_addr_octet[6];            /* 48-bit Ethernet address */
@@ -100,7 +98,7 @@ struct sprdwl_scan_state {
 struct sprdwl_priv {
 	struct sprdwl_if_ops *if_ops;
 	/* Drivers interface flags.  See IFF_* definitions in include/net/if.h */
-  	uint8_t d_flags;
+	uint8_t d_flags;
 	unsigned char vif_id;
 	unsigned char mode;
 	struct ether_addr d_mac;      /* Device MAC address */
@@ -114,10 +112,9 @@ struct sprdwl_priv {
 
 	struct sprdwl_bss_info bss[MAX_BSS_ENTRIES];
 	u32 bss_count;
-	struct wpa_driver_direct_data * drv;
+	struct wpa_driver_direct_data *drv;
 };
 
 struct sprdwl_priv *sprdwl_get_priv(void);
 struct sprdwl_if_ops *sprdwl_get_if_ops(void);
 #endif /*__RTOS_DRV_SC2331_H__ */
-

@@ -38,4 +38,3 @@ struct wpa_driver_direct_data {
 
 void rtos_drv_rx_eapol(struct wpa_driver_direct_data *drv, const u8 *data, u32 len);
 #endif /* RTOS_STA_DIRECT_H */
-

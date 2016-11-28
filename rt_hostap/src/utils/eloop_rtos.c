@@ -17,7 +17,6 @@
 #include "common.h"
 #include "trace.h"
 #include "list.h"
-#include "os_adp.h"
 #include "eloop.h"
 
 struct eloop_timeout {

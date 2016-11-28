@@ -2,10 +2,9 @@
 #define WIFI_SERVER_INTF
 
 #include "yunos_bsp_wifi.h"
-#include "os_adp.h"
+#include "eloop.h"
 #include "common.h"
 #include "wifi_manager.h"
-#include "eloop.h"
 
 #define SCAN_TIMEOUT_MS 15*1000
 #define CONNECT_TIMEOUT_MS 6*1000

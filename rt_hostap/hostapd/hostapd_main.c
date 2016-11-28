@@ -16,7 +16,6 @@
 #include "utils/common.h"
 #include "ap/hostapd.h"
 #include "wifi_manager.h"
-#include "os_adp.h"
 #include "init.h"
 #include "wifi_server_intf.h"
 #define HOSTAPD_TASK_PRI 80
