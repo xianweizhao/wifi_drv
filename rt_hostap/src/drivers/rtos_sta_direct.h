@@ -2,7 +2,6 @@
 #define __RTOS_STA_DIRECT_H__
 
 #include "driver.h"
-#include "os_adp.h"
 #include "rtos_direct_drv.h"
 #include "rtos_drv_sc2331.h"
 

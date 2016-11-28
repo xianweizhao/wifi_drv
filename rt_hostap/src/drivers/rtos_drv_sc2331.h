@@ -5,7 +5,6 @@
 #include "cos.h"
 #include "event.h"
 #include "ts.h"
-#include "os_adp.h"
 #include "stdio.h"
 #include "common/ieee802_11_defs.h"
 #include "rtos_drv_sc2331_cp_defs.h"

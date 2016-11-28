@@ -1,6 +1,6 @@
 #ifndef RTOS_DIRECT_DRV_H
 #define RTOS_DIRECT_DRV_H
-#include "eloop.h" /* eloop include os_adp.h */
+#include "eloop.h" 
 #define IFLA_WIRELESS 1
 #define IFLA_RX_EAPOL 2
 enum evt_type_t{

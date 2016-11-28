@@ -4,13 +4,7 @@
  *
  * wifi server intferce is client of wpa supplicant through msgq
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "wifi_server_intf.h"
-
 #include "../../wpa_supplicant/wpa_supplicant_i.h"
 #include "../../wpa_supplicant/driver_i.h"
 #include "common/ieee802_11_defs.h"

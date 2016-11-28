@@ -1,5 +1,4 @@
 #include "wifi_manager.h"
-#include "os_adp.h"
 #include "wifi_server_intf.h"
 
 enum wpas_wifi_mode_t  wifi_work_mode = WIFI_MODE_NONE;
