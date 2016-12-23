@@ -28,7 +28,6 @@
 #include "ieee802_1x.h"
 #include "wpa_auth.h"
 #include "wmm.h"
-#include "wps_hostapd.h"
 #include "ap_config.h"
 
 

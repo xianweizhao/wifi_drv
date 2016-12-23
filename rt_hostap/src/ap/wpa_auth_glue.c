@@ -533,9 +533,4 @@ void hostapd_deinit_wpa(struct hostapd_data *hapd)
 				   hapd->conf->iface);
 		}
 	}
-	ieee802_1x_deinit(hapd);
-
-#ifdef CONFIG_IEEE80211R
-	l2_packet_deinit(hapd->l2);
-#endif /* CONFIG_IEEE80211R */
 }

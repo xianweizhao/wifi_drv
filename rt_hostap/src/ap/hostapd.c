@@ -29,7 +29,7 @@
 #include "ieee802_11_auth.h"
 #include "vlan_init.h"
 #include "wpa_auth.h"
-#include "wps_hostapd.h"
+
 #include "hw_features.h"
 #include "wpa_auth_glue.h"
 #include "ap_drv_ops.h"
