@@ -17,65 +17,6 @@
 
 #include "os.h"
 
-#if defined(__linux__) || defined(__GLIBC__)
-#include <endian.h>
-#include <byteswap.h>
-#endif /* __linux__ */
-
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__) || \
-    defined(__OpenBSD__)
-#include <sys/types.h>
-#include <sys/endian.h>
-#define __BYTE_ORDER	_BYTE_ORDER
-#define	__LITTLE_ENDIAN	_LITTLE_ENDIAN
-#define	__BIG_ENDIAN	_BIG_ENDIAN
-#ifdef __OpenBSD__
-#define bswap_16 swap16
-#define bswap_32 swap32
-#define bswap_64 swap64
-#else /* __OpenBSD__ */
-#define bswap_16 bswap16
-#define bswap_32 bswap32
-#define bswap_64 bswap64
-#endif /* __OpenBSD__ */
-#endif /* defined(__FreeBSD__) || defined(__NetBSD__) ||
-	* defined(__DragonFly__) || defined(__OpenBSD__) */
-
-#ifdef __APPLE__
-#include <sys/types.h>
-#include <machine/endian.h>
-#define __BYTE_ORDER	_BYTE_ORDER
-#define __LITTLE_ENDIAN	_LITTLE_ENDIAN
-#define __BIG_ENDIAN	_BIG_ENDIAN
-static inline unsigned short bswap_16(unsigned short v)
-{
-	return ((v & 0xff) << 8) | (v >> 8);
-}
-
-static inline unsigned int bswap_32(unsigned int v)
-{
-	return ((v & 0xff) << 24) | ((v & 0xff00) << 8) |
-		((v & 0xff0000) >> 8) | (v >> 24);
-}
-#endif /* __APPLE__ */
-
-#if defined(__cskyLE__) || defined(__cskyBE__)
-#ifdef __cskyLE__
-#define __BYTE_ORDER __LITTLE_ENDIAN
-#else
-#define __BYTE_ORDER __BIG_ENDIAN
-#endif /* __cskyLE__ */
-static inline unsigned short bswap_16(unsigned short v)
-{
-	return ((v & 0xff) << 8) | (v >> 8);
-}
-
-static inline unsigned int bswap_32(unsigned int v)
-{
-	return ((v & 0xff) << 24) | ((v & 0xff00) << 8) |
-		((v & 0xff0000) >> 8) | (v >> 24);
-}
-#endif /* defined(__cskyLE__) || defined(__cskyBE__) */
 
 #ifdef __SX__
 #define __BYTE_ORDER __LITTLE_ENDIAN
@@ -98,43 +39,12 @@ static inline unsigned int bswap_32(unsigned int v)
 #endif /* __SX__ */
 
 
-
-/* Define platform specific integer types */
-
-#ifdef _MSC_VER
-typedef UINT64 u64;
-typedef UINT32 u32;
-typedef UINT16 u16;
-typedef UINT8 u8;
-typedef INT64 s64;
-typedef INT32 s32;
-typedef INT16 s16;
-typedef INT8 s8;
-#define WPA_TYPES_DEFINED
-#endif /* _MSC_VER */
-
-#ifdef __vxworks
-typedef unsigned long long u64;
-typedef UINT32 u32;
-typedef UINT16 u16;
-typedef UINT8 u8;
-typedef long long s64;
-typedef INT32 s32;
-typedef INT16 s16;
-typedef INT8 s8;
-#define WPA_TYPES_DEFINED
-#endif /* __vxworks */
-
 #ifdef __SX__
 #define WPA_TYPES_DEFINED
 #endif /* __SYMBIAN32__ */
 
 #ifndef WPA_TYPES_DEFINED
-#ifdef CONFIG_USE_INTTYPES_H
-#include <inttypes.h>
-#else
 #include <stdint.h>
-#endif
 typedef uint64_t u64;
 typedef uint32_t u32;
 typedef uint16_t u16;
@@ -405,13 +315,9 @@ int wpa_snprintf_hex(char *buf, size_t buf_size, const u8 *data, size_t len);
 int wpa_snprintf_hex_uppercase(char *buf, size_t buf_size, const u8 *data,
 			       size_t len);
 
-#ifdef CONFIG_NATIVE_WINDOWS
-void wpa_unicode2ascii_inplace(TCHAR *str);
-TCHAR * wpa_strdup_tchar(const char *str);
-#else /* CONFIG_NATIVE_WINDOWS */
 #define wpa_unicode2ascii_inplace(s) do { } while (0)
 #define wpa_strdup_tchar(s) strdup((s))
-#endif /* CONFIG_NATIVE_WINDOWS */
+
 
 const char * wpa_ssid_txt(const u8 *ssid, size_t ssid_len);
 

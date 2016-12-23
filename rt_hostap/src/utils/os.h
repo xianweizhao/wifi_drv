@@ -113,25 +113,6 @@ static inline int os_reltime_initialized(struct os_reltime *t)
 	return t->sec != 0 || t->usec != 0;
 }
 
-
-/**
- * os_mktime - Convert broken-down time into seconds since 1970-01-01
- * @year: Four digit year
- * @month: Month (1 .. 12)
- * @day: Day of month (1 .. 31)
- * @hour: Hour (0 .. 23)
- * @min: Minute (0 .. 59)
- * @sec: Second (0 .. 60)
- * @t: Buffer for returning calendar time representation (seconds since
- * 1970-01-01 00:00:00)
- * Returns: 0 on success, -1 on failure
- *
- * Note: The result is in seconds from Epoch, i.e., in UTC, not in local time
- * which is used by POSIX mktime().
- */
-int os_mktime(int year, int month, int day, int hour, int min, int sec,
-	      os_time_t *t);
-
 struct os_tm {
 	int sec; /* 0..59 or 60 for leap seconds */
 	int min; /* 0..59 */
@@ -143,18 +124,6 @@ struct os_tm {
 
 int os_gmtime(os_time_t t, struct os_tm *tm);
 
-/**
- * os_daemonize - Run in the background (detach from the controlling terminal)
- * @pid_file: File name to write the process ID to or %NULL to skip this
- * Returns: 0 on success, -1 on failure
- */
-int os_daemonize(const char *pid_file);
-
-/**
- * os_daemonize_terminate - Stop running in the background (remove pid file)
- * @pid_file: File name to write the process ID to or %NULL to skip this
- */
-void os_daemonize_terminate(const char *pid_file);
 
 /**
  * os_get_random - Get cryptographically strong pseudo random data
@@ -170,81 +139,7 @@ int os_get_random(unsigned char *buf, size_t len);
  */
 unsigned long os_random(void);
 
-/**
- * os_rel2abs_path - Get an absolute path for a file
- * @rel_path: Relative path to a file
- * Returns: Absolute path for the file or %NULL on failure
- *
- * This function tries to convert a relative path of a file to an absolute path
- * in order for the file to be found even if current working directory has
- * changed. The returned value is allocated and caller is responsible for
- * freeing it. It is acceptable to just return the same path in an allocated
- * buffer, e.g., return strdup(rel_path). This function is only used to find
- * configuration files when os_daemonize() may have changed the current working
- * directory and relative path would be pointing to a different location.
- */
-char * os_rel2abs_path(const char *rel_path);
 
-/**
- * os_program_init - Program initialization (called at start)
- * Returns: 0 on success, -1 on failure
- *
- * This function is called when a programs starts. If there are any OS specific
- * processing that is needed, it can be placed here. It is also acceptable to
- * just return 0 if not special processing is needed.
- */
-int os_program_init(void);
-
-/**
- * os_program_deinit - Program deinitialization (called just before exit)
- *
- * This function is called just before a program exists. If there are any OS
- * specific processing, e.g., freeing resourced allocated in os_program_init(),
- * it should be done here. It is also acceptable for this function to do
- * nothing.
- */
-void os_program_deinit(void);
-
-/**
- * os_setenv - Set environment variable
- * @name: Name of the variable
- * @value: Value to set to the variable
- * @overwrite: Whether existing variable should be overwritten
- * Returns: 0 on success, -1 on error
- *
- * This function is only used for wpa_cli action scripts. OS wrapper does not
- * need to implement this if such functionality is not needed.
- */
-int os_setenv(const char *name, const char *value, int overwrite);
-
-/**
- * os_unsetenv - Delete environent variable
- * @name: Name of the variable
- * Returns: 0 on success, -1 on error
- *
- * This function is only used for wpa_cli action scripts. OS wrapper does not
- * need to implement this if such functionality is not needed.
- */
-int os_unsetenv(const char *name);
-
-/**
- * os_readfile - Read a file to an allocated memory buffer
- * @name: Name of the file to read
- * @len: For returning the length of the allocated buffer
- * Returns: Pointer to the allocated buffer or %NULL on failure
- *
- * This function allocates memory and reads the given file to this buffer. Both
- * binary and text files can be read with this function. The caller is
- * responsible for freeing the returned buffer with os_free().
- */
-char * os_readfile(const char *name, size_t *len);
-
-/**
- * os_file_exists - Check whether the specified file exists
- * @fname: Path and name of the file
- * Returns: 1 if the file exists or 0 if not
- */
-int os_file_exists(const char *fname);
 
 /**
  * os_fdatasync - Sync a file's (for a given stream) state with storage device
@@ -281,13 +176,8 @@ static inline void * os_calloc(size_t nmemb, size_t size)
 	return os_zalloc(nmemb * size);
 }
 
-#ifdef WPA_TRACE
-void * os_malloc(size_t size);
-void * os_realloc(void *ptr, size_t size);
-void os_free(void *ptr);
-char * os_strdup(const char *s);
+#ifdef __SX__
 
-#elif __SX__
 #ifndef os_malloc
 #define os_malloc(s) COS_Malloc((s))
 #endif
@@ -315,24 +205,7 @@ char * os_strdup(const char *s);
 #endif
 typedef char *caddr_t;
 
-#else /* WPA_TRACE */
-#ifndef os_malloc
-#define os_malloc(s) malloc((s))
-#endif
-#ifndef os_realloc
-#define os_realloc(p, s) realloc((p), (s))
-#endif
-#ifndef os_free
-#define os_free(p) free((p))
-#endif
-#ifndef os_strdup
-#ifdef _MSC_VER
-#define os_strdup(s) _strdup(s)
-#else
-#define os_strdup(s) strdup(s)
-#endif
-#endif
-#endif /* WPA_TRACE */
+#endif /* __SX__ */
 
 #ifndef os_memcpy
 #define os_memcpy(d, s, n) memcpy((d), (s), (n))
@@ -351,18 +224,12 @@ typedef char *caddr_t;
 #define os_strlen(s) strlen(s)
 #endif
 #ifndef os_strcasecmp
-#ifdef _MSC_VER
-#define os_strcasecmp(s1, s2) _stricmp((s1), (s2))
-#else
 #define os_strcasecmp(s1, s2) strcasecmp((s1), (s2))
 #endif
-#endif
 #ifndef os_strncasecmp
-#ifdef _MSC_VER
-#define os_strncasecmp(s1, s2, n) _strnicmp((s1), (s2), (n))
-#else
+
 #define os_strncasecmp(s1, s2, n) strncasecmp((s1), (s2), (n))
-#endif
+
 #endif
 #ifndef os_strchr
 #define os_strchr(s, c) strchr((s), (c))
@@ -381,11 +248,7 @@ typedef char *caddr_t;
 #endif
 
 #ifndef os_snprintf
-#ifdef _MSC_VER
-#define os_snprintf _snprintf
-#else
 #define os_snprintf snprintf
-#endif
 #endif
 
 #ifndef os_strdup
@@ -408,30 +271,6 @@ static  inline char * os_strdup(const char *s)
 static inline int os_snprintf_error(size_t size, int res)
 {
 	return res < 0 || (unsigned int) res >= size;
-}
-
-
-static inline void * os_realloc_array(void *ptr, size_t nmemb, size_t size)
-{
-	if (size && nmemb > (~(size_t) 0) / size)
-		return NULL;
-	return os_realloc(ptr, nmemb * size);
-}
-
-/**
- * os_remove_in_array - Remove a member from an array by index
- * @ptr: Pointer to the array
- * @nmemb: Current member count of the array
- * @size: The size per member of the array
- * @idx: Index of the member to be removed
- */
-static inline void os_remove_in_array(void *ptr, size_t nmemb, size_t size,
-				      size_t idx)
-{
-	if (idx < nmemb - 1)
-		os_memmove(((unsigned char *) ptr) + idx * size,
-			   ((unsigned char *) ptr) + (idx + 1) * size,
-			   (nmemb - idx - 1) * size);
 }
 
 /**
@@ -473,41 +312,7 @@ int os_memcmp_const(const void *a, const void *b, size_t len);
 int os_exec(const char *program, const char *arg, int wait_completion);
 
 
-#ifdef OS_REJECT_C_LIB_FUNCTIONS
-#define malloc OS_DO_NOT_USE_malloc
-#define realloc OS_DO_NOT_USE_realloc
-#define free OS_DO_NOT_USE_free
-#define memcpy OS_DO_NOT_USE_memcpy
-#define memmove OS_DO_NOT_USE_memmove
-#define memset OS_DO_NOT_USE_memset
-#define memcmp OS_DO_NOT_USE_memcmp
-#undef strdup
-#define strdup OS_DO_NOT_USE_strdup
-#define strlen OS_DO_NOT_USE_strlen
-#define strcasecmp OS_DO_NOT_USE_strcasecmp
-#define strncasecmp OS_DO_NOT_USE_strncasecmp
-#undef strchr
-#define strchr OS_DO_NOT_USE_strchr
-#undef strcmp
-#define strcmp OS_DO_NOT_USE_strcmp
-#undef strncmp
-#define strncmp OS_DO_NOT_USE_strncmp
-#undef strncpy
-#define strncpy OS_DO_NOT_USE_strncpy
-#define strrchr OS_DO_NOT_USE_strrchr
-#define strstr OS_DO_NOT_USE_strstr
-#undef snprintf
-#define snprintf OS_DO_NOT_USE_snprintf
-
-#define strcpy OS_DO_NOT_USE_strcpy
-#endif /* OS_REJECT_C_LIB_FUNCTIONS */
-
-
-#if defined(WPA_TRACE_BFD) && defined(CONFIG_TESTING_OPTIONS)
-#define TEST_FAIL() testing_test_fail()
-int testing_test_fail(void);
-#else
 #define TEST_FAIL() 0
-#endif
+
 
 #endif /* OS_H */

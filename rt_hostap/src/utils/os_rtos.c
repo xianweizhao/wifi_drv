@@ -52,14 +52,6 @@ int os_get_reltime(struct os_reltime *t)
 	return res;
 }
 
-
-/*int os_mktime(int year, int month, int day, int hour, int min, int sec,
-	      os_time_t *t)
-{
-	return -1;
-}*/
-
-
 int os_gmtime(os_time_t t, struct os_tm *tm)
 {
 	struct tm *tm2;
