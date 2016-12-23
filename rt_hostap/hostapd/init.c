@@ -18,8 +18,6 @@
 #include "crypto/tls.h"
 #include "common/version.h"
 #include "drivers/driver.h"
-#include "eap_server/eap.h"
-#include "eap_server/tncs.h"
 #include "ap/hostapd.h"
 #include "ap/ap_config.h"
 

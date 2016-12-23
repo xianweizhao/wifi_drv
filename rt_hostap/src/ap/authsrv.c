@@ -16,8 +16,7 @@
 
 #include "utils/common.h"
 #include "crypto/tls.h"
-#include "eap_server/eap.h"
-#include "eap_server/eap_sim_db.h"
+
 #include "eapol_auth/eapol_auth_sm.h"
 #include "radius/radius_server.h"
 #include "hostapd.h"

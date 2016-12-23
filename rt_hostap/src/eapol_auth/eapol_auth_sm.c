@@ -20,7 +20,6 @@
 #include "common/eapol_common.h"
 #include "eap_common/eap_defs.h"
 #include "eap_common/eap_common.h"
-#include "eap_server/eap.h"
 #include "eapol_auth_sm.h"
 #include "eapol_auth_sm_i.h"
 

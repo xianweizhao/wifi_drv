@@ -18,7 +18,6 @@
 #include "common/ieee802_11_defs.h"
 #include "eapol_auth/eapol_auth_sm.h"
 #include "eapol_auth/eapol_auth_sm_i.h"
-#include "eap_server/eap.h"
 #include "drivers/driver.h"
 #include "hostapd.h"
 #include "ieee802_1x.h"

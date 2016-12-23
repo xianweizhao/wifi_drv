@@ -19,7 +19,6 @@
 #include "common/ieee802_11_defs.h"
 #include "common/eapol_common.h"
 #include "eap_common/eap_wsc_common.h"
-#include "eap_server/eap.h"
 #include "wpa_auth.h"
 #include "sta_info.h"
 #include "ap_config.h"

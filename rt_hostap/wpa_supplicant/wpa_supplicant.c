@@ -21,7 +21,6 @@
 #include "common.h"
 #include "eapol_supp/eapol_supp_sm.h"
 #include "eap_peer/eap.h"
-#include "eap_server/eap_methods.h"
 #include "rsn_supp/wpa.h"
 #include "eloop.h"
 #include "config.h"
