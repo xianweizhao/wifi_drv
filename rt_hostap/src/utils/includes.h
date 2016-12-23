@@ -1,6 +1,5 @@
 /*
  * wpa_supplicant/hostapd - Default include files
- * Copyright (c) 2005-2006, Jouni Malinen <j@w1.fi>
  *
  * This software may be distributed under the terms of the BSD license.
  * See README for more details.
@@ -29,31 +28,5 @@
 #include "tcpip_inet.h"
 #include "tcpip_sockets.h"
 #include "os_adp.h"
-#else
-
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <time.h>
-#ifndef _WIN32_WCE
-#include <signal.h>
-#include <sys/types.h>
-#endif /* _WIN32_WCE */
-#include <ctype.h>
-
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif /* _MSC_VER */
-
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#ifndef __vxworks
-#include <sys/uio.h>
-#include <sys/time.h>
-#endif /* __vxworks */
-
 #endif /* __SX__ */
 #endif /* INCLUDES_H */

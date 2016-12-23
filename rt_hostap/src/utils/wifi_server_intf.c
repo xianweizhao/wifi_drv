@@ -63,7 +63,7 @@ int wpas_channel_to_freq(int chan)
 }
 
 /*WEP SHARD is  what*/
-static wifi_conn_sectype_t wpas_get_security_for_yunos(const struct wpa_scan_res *bss)
+static enum wifi_conn_sectype  wpas_get_security_for_yunos(const struct wpa_scan_res *bss)
 {
 	const u8 *rsn_ie;
 	const u8 *wpa_ie;
@@ -79,32 +79,32 @@ static wifi_conn_sectype_t wpas_get_security_for_yunos(const struct wpa_scan_res
 	rsn_ie = wpa_scan_get_ie(bss, WLAN_EID_RSN);
 	if (rsn_ie) {
 		if (wpa_parse_wpa_ie(rsn_ie, 2 + rsn_ie[1], &ie))
-			return WIFI_CONN_SEC_UNKNOWN;
+			return WPAS_SEC_UNKNOWN;
 		if (ie.pairwise_cipher == WPA_CIPHER_CCMP)
-			return WIFI_CONN_SEC_WPA2_AES_PSK;
+			return WPAS_SEC_WPA2_AES_PSK;
 		if (ie.pairwise_cipher == WPA_CIPHER_TKIP)
-			return WIFI_CONN_SEC_WPA2_TKIP_PSK;
+			return WPAS_SEC_WPA2_TKIP_PSK;
 		if (ie.pairwise_cipher == (WPA_CIPHER_TKIP | WPA_CIPHER_CCMP))
-			return WIFI_CONN_SEC_WPA2_MIXED_PSK;
-		return WIFI_CONN_SEC_UNKNOWN;
+			return WPAS_SEC_WPA2_MIXED_PSK;
+		return WPAS_SEC_UNKNOWN;
 	}
 
 	wpa_ie = wpa_scan_get_vendor_ie(bss, WPA_IE_VENDOR_TYPE);
 	if (wpa_ie) {
 		if (wpa_parse_wpa_ie(wpa_ie, 2 + wpa_ie[1], &ie)) {
 			wpa_printf(MSG_DEBUG, "skip WPA IE - parse failed");
-			return WIFI_CONN_SEC_UNKNOWN;
+			return WPAS_SEC_UNKNOWN;
 		}
 		if (ie.pairwise_cipher == WPA_CIPHER_CCMP)
-			return WIFI_CONN_SEC_WPA_AES_PSK;
+			return WPAS_SEC_WPA_AES_PSK;
 		if (ie.pairwise_cipher == WPA_CIPHER_TKIP)
-			return WIFI_CONN_SEC_WPA_TKIP_PSK;
-		return WIFI_CONN_SEC_UNKNOWN;
+			return WPAS_SEC_WPA_TKIP_PSK;
+		return WPAS_SEC_UNKNOWN;
 	}
 	if (bss->caps & IEEE80211_CAP_PRIVACY)
-		return WIFI_CONN_SEC_WEP_PSK;
+		return WPAS_SEC_WEP_PSK;
 
-	return WIFI_CONN_SEC_OPEN;
+	return WPAS_SEC_OPEN;
 }
 #if 0
 static void wpas_only_scan_handler(struct wpa_supplicant *wpa_s,
@@ -117,11 +117,11 @@ static void wpas_only_scan_handler(struct wpa_supplicant *wpa_s,
 static void wpas_scan_handler(struct wpa_supplicant *wpa_s,
 			       struct wpa_scan_results *scan_res)
 {
-	wifi_scan_ap_t *info;
+	struct wifi_scan_ap *info;
 	int num = 0;
 	int i = 0;
 
-	info = (wifi_scan_ap_t *)intf_data.scan_user;
+	info = (struct wifi_scan_ap *)intf_data.scan_user;
 	intf_data.scan_user = NULL;
 	num = intf_data.scan_num;
 	if (num > scan_res->num)
@@ -158,63 +158,63 @@ static void wpas_scan_handler(struct wpa_supplicant *wpa_s,
 	SCI_PutSemaphore(intf_data.scan_done);
 }
 
-static void wpas_security_to_proto(wifi_conn_sectype_t security, struct connect_proto *proto)
+static void wpas_security_to_proto(enum wifi_conn_sectype security, struct connect_proto *proto)
 {
 	switch (security) {
-	case  WIFI_CONN_SEC_OPEN:
+	case  WPAS_SEC_OPEN:
 		proto->proto = 0;
 		proto->pairse_cipher = WPA_CIPHER_NONE;
 		proto->group_cipher = WPA_CIPHER_NONE;
 		proto->key_mgmt = WPA_KEY_MGMT_NONE;
 		break;
-	case  WIFI_CONN_SEC_WPA_AES_PSK:
+	case  WPAS_SEC_WPA_AES_PSK:
 		proto->proto = WPA_PROTO_WPA;
 		proto->pairse_cipher = WPA_CIPHER_CCMP;
 		proto->group_cipher = (WPA_CIPHER_CCMP | WPA_CIPHER_TKIP |
 				WPA_CIPHER_WEP104 | WPA_CIPHER_WEP40);
 		proto->key_mgmt = WPA_KEY_MGMT_PSK;
 		break;
-	case  WIFI_CONN_SEC_WPA2_AES_PSK:
+	case  WPAS_SEC_WPA2_AES_PSK:
 		proto->proto = WPA_PROTO_RSN;
 		proto->pairse_cipher = WPA_CIPHER_CCMP;
 		proto->group_cipher = (WPA_CIPHER_CCMP | WPA_CIPHER_TKIP |
 				WPA_CIPHER_WEP104 | WPA_CIPHER_WEP40);
 		proto->key_mgmt = WPA_KEY_MGMT_PSK;
 		break;
-	case  WIFI_CONN_SEC_WEP_PSK:
+	case  WPAS_SEC_WEP_PSK:
 		proto->proto = 0;
 		proto->pairse_cipher = WPA_CIPHER_WEP104 | WPA_CIPHER_WEP40;
 		proto->group_cipher = WPA_CIPHER_WEP104 | WPA_CIPHER_WEP40;
 		proto->key_mgmt = WPA_KEY_MGMT_PSK;
 		break;
-	case  WIFI_CONN_SEC_WEP_SHARED:
+	case  WPAS_SEC_WEP_SHARED:
 		proto->proto = 0;
 		proto->pairse_cipher = WPA_CIPHER_WEP104 | WPA_CIPHER_WEP40;
 		proto->group_cipher = WPA_CIPHER_WEP104 | WPA_CIPHER_WEP40;
 		proto->key_mgmt = WPA_KEY_MGMT_PSK;
 		break;
-	case  WIFI_CONN_SEC_WPA_TKIP_PSK:
+	case  WPAS_SEC_WPA_TKIP_PSK:
 		proto->proto = WPA_PROTO_WPA;
 		proto->pairse_cipher = WPA_CIPHER_TKIP;
 		proto->group_cipher = WPA_CIPHER_TKIP | WPA_CIPHER_WEP104 |
 				WPA_CIPHER_WEP40;
 		proto->key_mgmt = WPA_KEY_MGMT_PSK;
 		break;
-	case  WIFI_CONN_SEC_WPA2_TKIP_PSK:
+	case  WPAS_SEC_WPA2_TKIP_PSK:
 		proto->proto = WPA_PROTO_RSN;
 		proto->pairse_cipher = WPA_CIPHER_TKIP;
 		proto->group_cipher = WPA_CIPHER_TKIP | WPA_CIPHER_WEP104 |
 				WPA_CIPHER_WEP40;
 		proto->key_mgmt = WPA_KEY_MGMT_PSK;
 		break;
-	case  WIFI_CONN_SEC_WPA2_MIXED_PSK:
+	case  WPAS_SEC_WPA2_MIXED_PSK:
 		proto->proto = WPA_PROTO_RSN;
 		proto->pairse_cipher = WPA_CIPHER_CCMP | WPA_CIPHER_TKIP;
 		proto->group_cipher = (WPA_CIPHER_CCMP | WPA_CIPHER_TKIP |
 				WPA_CIPHER_WEP104 | WPA_CIPHER_WEP40);
 		proto->key_mgmt = WPA_KEY_MGMT_PSK;
 		break;
-	case  WIFI_CONN_SEC_UNKNOWN:
+	case  WPAS_SEC_UNKNOWN:
 	default:
 		proto->proto = WPA_PROTO_RSN | WPA_PROTO_WPA;
 		proto->pairse_cipher = WPA_CIPHER_CCMP | WPA_CIPHER_TKIP;
@@ -227,7 +227,7 @@ static void wpas_security_to_proto(wifi_conn_sectype_t security, struct connect_
 
 
 
-int wifi_get_mac_address(wifi_mac_addr_t mac_addr)
+int wifi_get_mac_address(u8* mac_addr)
 {
 	struct wpa_supplicant *wpa_s = NULL;
 	const unsigned char *addr = mac_addr;
@@ -258,7 +258,7 @@ int wpas_notify_connect_change(int new_state, int old_state)
 	return 0;
 }
 
-wifi_conn_sectype_t wpas_get_current_ap_security(void)
+enum wifi_conn_sectype wpas_get_current_ap_security(void)
 {
 	struct wpa_supplicant *wpa_s = intf_data.wpa_s;
 	struct wpa_ssid *ssid = NULL;
@@ -268,18 +268,18 @@ wifi_conn_sectype_t wpas_get_current_ap_security(void)
 	ssid = wpa_s->current_ssid;
 	if (ssid->proto == WPA_PROTO_RSN) {
 		if (wpa_s->pairwise_cipher == WPA_CIPHER_CCMP)
-			return WIFI_CONN_SEC_WPA2_AES_PSK;
+			return WPAS_SEC_WPA2_AES_PSK;
 		if (wpa_s->pairwise_cipher == WPA_CIPHER_TKIP)
-			return WIFI_CONN_SEC_WPA2_TKIP_PSK;
+			return WPAS_SEC_WPA2_TKIP_PSK;
 	}
 	if (ssid->proto == WPA_PROTO_WPA) {
 		if (wpa_s->pairwise_cipher == WPA_CIPHER_TKIP)
-			return WIFI_CONN_SEC_WPA_TKIP_PSK;
+			return WPAS_SEC_WPA_TKIP_PSK;
 	}
 	if (wpa_s->current_bss->caps & IEEE80211_CAP_PRIVACY)
-		return WIFI_CONN_SEC_WEP_PSK;
+		return WPAS_SEC_WEP_PSK;
 
-	return WIFI_CONN_SEC_OPEN;
+	return WPAS_SEC_OPEN;
 }
 
 static struct wpa_ssid *wpas_wpa_ssid_save(struct wpa_supplicant *wpa_s,
@@ -393,7 +393,7 @@ void wpas_wifi_simple_scan(void)
 	SCI_SendMsg(intf_data.msg_q, (const char *)&buf, 0xffffffff);
 }
 
-int wpas_wifi_scan(wifi_scan_ap_t * info, uint32_t size)
+int wpas_wifi_scan(struct wifi_scan_ap * info, uint32_t size)
 {
 	int ret = 0;
 
@@ -419,8 +419,8 @@ int wpas_wifi_scan(wifi_scan_ap_t * info, uint32_t size)
 }
 
 int wpas_wifi_connect_ext(const char *ssid, const char *password,
-			       const wifi_mac_addr_t bssid, uint8_t channel,
-			       wifi_conn_sectype_t security)
+			       const u8 * bssid, uint8_t channel,
+			       enum wifi_conn_sectype security)
 {
 	struct msgq_cmd_buf  buf;
 	int ret = 0;
@@ -543,7 +543,7 @@ int wpas_wifi_get_rate(void)
 	return si.current_txrate;
 }
 
-int wpas_get_current_ap_bssid(wifi_mac_addr_t mac_addr)
+int wpas_get_current_ap_bssid(u8* mac_addr)
 {
 	struct wpa_bss *bss = NULL;
 
@@ -628,7 +628,7 @@ int hostapd_priv_data_deinit(void)
 
 	return 0;
 }
-int hostapd_wifi_softap_start(const wifi_ap_param_t * param)
+int hostapd_wifi_softap_start(const struct wifi_ap_param *param)
 {
 	return hostapd_main();
 }
