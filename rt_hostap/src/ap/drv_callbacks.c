@@ -37,11 +37,6 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 	struct sta_info *sta;
 	int new_assoc;
 	struct ieee802_11_elems elems;
-#ifdef CONFIG_P2P
-	const u8 *all_ies = ie;
-	size_t all_ies_len = ielen;
-#endif /* CONFIG_P2P */
-
 	if (addr == NULL) {
 		/*
 		 * This could potentially happen with unexpected event from the
@@ -152,19 +147,7 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 			return -1;
 		}
 	} else if (hapd->conf->wps_state) {
-#ifdef CONFIG_WPS_STRICT
-		struct wpabuf *wps;
-		wps = ieee802_11_vendor_ie_concat(ie, ielen,
-						  WPS_IE_VENDOR_TYPE);
-		if (wps && wps_validate_assoc_req(wps) < 0) {
-			hapd->drv.sta_disassoc(hapd, sta->addr,
-					       WLAN_REASON_INVALID_IE);
-			ap_free_sta(hapd, sta);
-			wpabuf_free(wps);
-			return -1;
-		}
-		wpabuf_free(wps);
-#endif /* CONFIG_WPS_STRICT */
+
 		if (ie && ielen > 4 && ie[0] == 0xdd && ie[1] >= 4 &&
 		    os_memcmp(ie + 2, "\x00\x50\xf2\x04", 4) == 0) {
 			sta->flags |= WLAN_STA_WPS;
@@ -184,12 +167,6 @@ skip_wpa_check:
 
 	/*ieee802_1x_notify_port_enabled(sta->eapol_sm, 1);*/
 
-#ifdef CONFIG_P2P
-	if (elems.p2p) {
-		p2p_group_notif_assoc(hapd->p2p_group, sta->addr,
-				      all_ies, all_ies_len);
-	}
-#endif /* CONFIG_P2P */
 
 	return 0;
 }
@@ -222,141 +199,6 @@ void hostapd_notif_disassoc(struct hostapd_data *hapd, const u8 *addr)
 
 
 #ifdef HOSTAPD
-
-#ifdef NEED_AP_MLME
-
-static const u8 * get_hdr_bssid(const struct ieee80211_hdr *hdr, size_t len)
-{
-	u16 fc, type, stype;
-
-	/*
-	 * PS-Poll frames are 16 bytes. All other frames are
-	 * 24 bytes or longer.
-	 */
-	if (len < 16)
-		return NULL;
-
-	fc = le_to_host16(hdr->frame_control);
-	type = WLAN_FC_GET_TYPE(fc);
-	stype = WLAN_FC_GET_STYPE(fc);
-
-	switch (type) {
-	case WLAN_FC_TYPE_DATA:
-		if (len < 24)
-			return NULL;
-		switch (fc & (WLAN_FC_FROMDS | WLAN_FC_TODS)) {
-		case WLAN_FC_FROMDS | WLAN_FC_TODS:
-		case WLAN_FC_TODS:
-			return hdr->addr1;
-		case WLAN_FC_FROMDS:
-			return hdr->addr2;
-		default:
-			return NULL;
-		}
-	case WLAN_FC_TYPE_CTRL:
-		if (stype != WLAN_FC_STYPE_PSPOLL)
-			return NULL;
-		return hdr->addr1;
-	case WLAN_FC_TYPE_MGMT:
-		return hdr->addr3;
-	default:
-		return NULL;
-	}
-}
-
-
-#define HAPD_BROADCAST ((struct hostapd_data *) -1)
-
-static struct hostapd_data * get_hapd_bssid(struct hostapd_iface *iface,
-					    const u8 *bssid)
-{
-	size_t i;
-
-	if (bssid == NULL)
-		return NULL;
-	if (bssid[0] == 0xff && bssid[1] == 0xff && bssid[2] == 0xff &&
-	    bssid[3] == 0xff && bssid[4] == 0xff && bssid[5] == 0xff)
-		return HAPD_BROADCAST;
-
-	for (i = 0; i < iface->num_bss; i++) {
-		if (os_memcmp(bssid, iface->bss[i]->own_addr, ETH_ALEN) == 0)
-			return iface->bss[i];
-	}
-
-	return NULL;
-}
-
-
-static void hostapd_rx_from_unknown_sta(struct hostapd_data *hapd,
-					const u8 *frame, size_t len)
-{
-	const struct ieee80211_hdr *hdr = (const struct ieee80211_hdr *) frame;
-	u16 fc = le_to_host16(hdr->frame_control);
-	hapd = get_hapd_bssid(hapd->iface, get_hdr_bssid(hdr, len));
-	if (hapd == NULL || hapd == HAPD_BROADCAST)
-		return;
-
-	ieee802_11_rx_from_unknown(hapd, hdr->addr2,
-				   (fc & (WLAN_FC_TODS | WLAN_FC_FROMDS)) ==
-				   (WLAN_FC_TODS | WLAN_FC_FROMDS));
-}
-
-
-static void hostapd_mgmt_rx(struct hostapd_data *hapd, struct rx_mgmt *rx_mgmt)
-{
-	struct hostapd_iface *iface = hapd->iface;
-	const struct ieee80211_hdr *hdr;
-	const u8 *bssid;
-	struct hostapd_frame_info fi;
-
-	hdr = (const struct ieee80211_hdr *) rx_mgmt->frame;
-	bssid = get_hdr_bssid(hdr, rx_mgmt->frame_len);
-	if (bssid == NULL)
-		return;
-
-	hapd = get_hapd_bssid(iface, bssid);
-	if (hapd == NULL) {
-		u16 fc;
-		fc = le_to_host16(hdr->frame_control);
-
-		/*
-		 * Drop frames to unknown BSSIDs except for Beacon frames which
-		 * could be used to update neighbor information.
-		 */
-		if (WLAN_FC_GET_TYPE(fc) == WLAN_FC_TYPE_MGMT &&
-		    WLAN_FC_GET_STYPE(fc) == WLAN_FC_STYPE_BEACON)
-			hapd = iface->bss[0];
-		else
-			return;
-	}
-
-	os_memset(&fi, 0, sizeof(fi));
-	fi.datarate = rx_mgmt->datarate;
-	fi.ssi_signal = rx_mgmt->ssi_signal;
-
-	if (hapd == HAPD_BROADCAST) {
-		size_t i;
-		for (i = 0; i < iface->num_bss; i++)
-			ieee802_11_mgmt(iface->bss[i], rx_mgmt->frame,
-					rx_mgmt->frame_len, &fi);
-	} else
-		ieee802_11_mgmt(hapd, rx_mgmt->frame, rx_mgmt->frame_len, &fi);
-}
-
-
-static void hostapd_mgmt_tx_cb(struct hostapd_data *hapd, const u8 *buf,
-			       size_t len, u16 stype, int ok)
-{
-	struct ieee80211_hdr *hdr;
-	hdr = (struct ieee80211_hdr *) buf;
-	hapd = get_hapd_bssid(hapd->iface, get_hdr_bssid(hdr, len));
-	if (hapd == NULL || hapd == HAPD_BROADCAST)
-		return;
-	ieee802_11_mgmt_cb(hapd, buf, len, stype, ok);
-}
-
-#endif /* NEED_AP_MLME */
-
 
 static int hostapd_probe_req_rx(struct hostapd_data *hapd, const u8 *sa,
 				const u8 *ie, size_t ie_len)
@@ -430,40 +272,11 @@ void hostapd_event(void *ctx, enum wpa_event_type event,
 		if (hapd->iface->scan_cb)
 			hapd->iface->scan_cb(hapd->iface);
 		break;
-#ifdef CONFIG_IEEE80211R
-	case EVENT_FT_RRB_RX:
-		wpa_ft_rrb_rx(hapd->wpa_auth, data->ft_rrb_rx.src,
-			      data->ft_rrb_rx.data, data->ft_rrb_rx.data_len);
-		break;
-#endif /* CONFIG_IEEE80211R */
+
 	case EVENT_WPS_BUTTON_PUSHED:
 		hostapd_wps_button_pushed(hapd);
 		break;
-#ifdef NEED_AP_MLME
-	case EVENT_TX_STATUS:
-		switch (data->tx_status.type) {
-		case WLAN_FC_TYPE_MGMT:
-			hostapd_mgmt_tx_cb(hapd, data->tx_status.data,
-					   data->tx_status.data_len,
-					   data->tx_status.stype,
-					   data->tx_status.ack);
-			break;
-		case WLAN_FC_TYPE_DATA:
-			hostapd_tx_status(hapd, data->tx_status.dst,
-					  data->tx_status.data,
-					  data->tx_status.data_len,
-					  data->tx_status.ack);
-			break;
-		}
-		break;
-	case EVENT_RX_FROM_UNKNOWN:
-		hostapd_rx_from_unknown_sta(hapd, data->rx_from_unknown.frame,
-					    data->rx_from_unknown.len);
-		break;
-	case EVENT_RX_MGMT:
-		hostapd_mgmt_rx(hapd, &data->rx_mgmt);
-		break;
-#endif /* NEED_AP_MLME */
+
 	case EVENT_RX_PROBE_REQ:
 		hostapd_probe_req_rx(hapd, data->rx_probe_req.sa,
 				     data->rx_probe_req.ie,
