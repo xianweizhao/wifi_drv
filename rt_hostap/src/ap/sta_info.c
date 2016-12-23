@@ -28,7 +28,6 @@
 #include "beacon.h"
 #include "ap_mlme.h"
 #include "vlan_init.h"
-#include "p2p_hostapd.h"
 #include "sta_info.h"
 
 void ap_handle_timer(void *eloop_ctx, void *timeout_ctx);
