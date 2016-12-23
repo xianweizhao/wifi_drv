@@ -1,9 +1,6 @@
 #ifndef WIFI_MANAGER_H
 #define WIFI_MANAGER_H
-#ifndef __SX__ 
-#include "wcnd_api.h"
-#define WCND_IS_OK
-#endif
+
 enum wpas_wifi_mode_t{
 	WIFI_MODE_STA,
 	WIFI_MODE_AP,
