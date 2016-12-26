@@ -53,26 +53,6 @@ static void hostapd_wpa_auth_conf(struct hostapd_bss_config *conf,
 	wconf->wmm_enabled = conf->wmm_enabled;
 	wconf->wmm_uapsd = conf->wmm_uapsd;
 	wconf->okc = conf->okc;
-#ifdef CONFIG_IEEE80211R
-	wconf->ssid_len = conf->ssid.ssid_len;
-	if (wconf->ssid_len > SSID_LEN)
-		wconf->ssid_len = SSID_LEN;
-	os_memcpy(wconf->ssid, conf->ssid.ssid, wconf->ssid_len);
-	os_memcpy(wconf->mobility_domain, conf->mobility_domain,
-		  MOBILITY_DOMAIN_ID_LEN);
-	if (conf->nas_identifier &&
-	    os_strlen(conf->nas_identifier) <= FT_R0KH_ID_MAX_LEN) {
-		wconf->r0_key_holder_len = os_strlen(conf->nas_identifier);
-		os_memcpy(wconf->r0_key_holder, conf->nas_identifier,
-			  wconf->r0_key_holder_len);
-	}
-	os_memcpy(wconf->r1_key_holder, conf->r1_key_holder, FT_R1KH_ID_LEN);
-	wconf->r0_key_lifetime = conf->r0_key_lifetime;
-	wconf->reassociation_deadline = conf->reassociation_deadline;
-	wconf->r0kh_list = conf->r0kh_list;
-	wconf->r1kh_list = conf->r1kh_list;
-	wconf->pmk_r1_push = conf->pmk_r1_push;
-#endif /* CONFIG_IEEE80211R */
 }
 
 
